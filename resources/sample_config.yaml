@@ -1,0 +1,13 @@
+cronfreq: 1m
+emailconfig:
+  host: "smtp.gmail.com"
+  port: 587
+  username: "<your-email>@gmail.com"
+  password: "<your-password>"
+notificationconfig:
+  - pincode: 400045,400344,40000411,400004
+    minage: 18
+    email: <email_id1>
+  - pincode: 400045,400344
+    minage: 50
+    email: <email_id1>

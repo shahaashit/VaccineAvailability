@@ -1,10 +1,9 @@
 package availabilitychecker
 
 import (
-	"VaccineAvailability/config"
+	"VaccineAvailability/availabilitychecker/models"
 	"VaccineAvailability/log"
-	"VaccineAvailability/models"
-	"VaccineAvailability/throttle"
+	"VaccineAvailability/utils/throttle"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -14,7 +13,7 @@ import (
 )
 
 func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList) {
-	th := throttle.NewThrottle(5)
+	th := throttle.NewThrottle(10)
 	for _, pinCode := range pinCodes {
 		pinCode := pinCode
 		th.Do()
@@ -25,8 +24,7 @@ func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList
 				log.Error("error while getting data from api: ", err)
 				return
 			}
-			validCenters := resp.Centers.GetValidCenters(config.Config.Age)
-			finalData = append(finalData, validCenters...)
+			finalData = append(finalData, resp.Centers...)
 		}()
 	}
 	th.Finish()

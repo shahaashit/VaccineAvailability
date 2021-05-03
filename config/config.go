@@ -7,29 +7,26 @@ import (
 	"os"
 )
 
-var Config Conf
-
-type Conf struct {
-	Pincode string `yaml:"pincode"`
-	Age     int64  `yaml:"age"`
-	Debug   bool   `yaml:"debug"`
-}
-
 func init() {
 	SetConfig()
 }
 
 func SetConfig() {
-	yamlFile, err := ioutil.ReadFile("config.yaml")
+	yamlFile, err := ioutil.ReadFile("resources/config.yaml") //todo: please configure this file according to sample_config.yaml
 	if err != nil {
 		log.Fatal("config read file error: " + err.Error())
 	}
-	err = yaml.Unmarshal(yamlFile, &Config)
-	if Config.Pincode == "" {
-		log.Fatal("Incorrect pincode value in config")
+	err = yaml.Unmarshal(yamlFile, &AppConfiguration)
+	if err != nil {
+		log.Fatal("Incorrect config: ", err)
 	}
-	if Config.Age < 0 {
-		log.Fatal("Incorrect age value in config")
+	err = validateConfig()
+	if err != nil {
+		log.Fatal("Incorrect config: ", err)
 	}
-	log.SetWriter(os.Stdout, Config.Debug)
+	log.SetWriter(os.Stdout, AppConfiguration.Debug)
+}
+
+func validateConfig() error {
+	return nil //todo: check if this needs to be done
 }
