@@ -3,7 +3,6 @@ package notifier
 import (
 	"VaccineAvailability/config"
 	"gopkg.in/gomail.v2"
-	"time"
 )
 
 var (
@@ -21,7 +20,7 @@ func sendMail(mailTo string, subject string, body string) error {
 	goMailMessage.SetHeader("From", mailClientConfig.UserName)
 	goMailMessage.SetHeader("To", mailTo)
 	goMailMessage.SetHeader("Subject", subject)
-	goMailMessage.SetBody("text/plain", time.Now().String()+body+time.Now().String())
+	goMailMessage.SetBody("text/plain", body)
 	//for _, file := range attachmentPaths {
 	//	goMailMessage.Attach(file)
 	//}
