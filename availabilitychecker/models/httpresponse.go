@@ -1,6 +1,8 @@
 package models
 
 import (
+	"VaccineAvailability/utils"
+	"sort"
 	"strconv"
 )
 
@@ -9,7 +11,7 @@ type HttpResponse struct {
 }
 
 type Centers struct {
-	CenterId     int64         `json:"center_id"`
+	CenterId     int           `json:"center_id"`
 	Name         string        `json:"name"`
 	StateName    string        `json:"state_name"`
 	Districtname string        `json:"district_name"`
@@ -27,8 +29,8 @@ type Centers struct {
 type Sessions struct {
 	SessionId         string   `json:"session_id"`
 	Date              string   `json:"date"`
-	AvailableCapacity int64    `json:"available_capacity"`
-	MinAgeLimit       int64    `json:"min_age_limit"`
+	AvailableCapacity int      `json:"available_capacity"`
+	MinAgeLimit       int      `json:"min_age_limit"`
 	Vaccine           string   `json:"vaccine"`
 	Slots             []string `json:"slots"`
 }
@@ -40,20 +42,34 @@ type VaccineFees struct {
 
 type CentersList []Centers
 
-func (c CentersList) GetAvailableCentersForAge(currentAge int64) CentersList {
+func (c CentersList) GetFilteredCenters(onlyAvailableCheck bool, currentAge int) CentersList {
 	var result CentersList
 	for _, center := range c {
 		var validSessions []Sessions
 		for _, session := range center.Sessions {
-			if session.AvailableCapacity > 0 && session.MinAgeLimit <= currentAge {
-				validSessions = append(validSessions, session)
+			if onlyAvailableCheck && session.AvailableCapacity <= 0 {
+				continue
 			}
+			if currentAge != -1 && session.MinAgeLimit != currentAge {
+				continue
+			}
+			validSessions = append(validSessions, session)
 		}
 		if len(validSessions) > 0 {
 			center.Sessions = validSessions
 			result = append(result, center)
 		}
 	}
+	return result
+}
+
+func (c CentersList) GetAllSortedCenterIds() []int {
+	var result []int
+	for _, center := range c {
+		result = append(result, center.CenterId)
+	}
+	result = utils.UniqueValues(result)
+	sort.Ints(result)
 	return result
 }
 

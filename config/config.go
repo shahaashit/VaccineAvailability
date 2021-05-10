@@ -24,7 +24,14 @@ func SetConfig() {
 	if err != nil {
 		log.Fatal("Incorrect config: ", err)
 	}
-	log.SetWriter(os.Stdout, AppConfiguration.Debug)
+	updateConfig()
+	log.SetWriter(os.Stdout, AppConfiguration.LogExtraInfo)
+}
+
+func updateConfig() {
+	if AppConfiguration.TestEnv {
+		AppConfiguration.DistrictConfig.ChannelConfigList = AppConfiguration.DistrictConfig.TestChannelConfigList
+	}
 }
 
 func validateConfig() error {
