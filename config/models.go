@@ -24,6 +24,7 @@ type DistrictConf struct {
 
 type TelegramChannelsConf struct {
 	DistrictId string `yaml:"districtid"`
+	Pincode    string `yaml:"pincode"`
 	ChannelId  string `yaml:"channelid"`
 	AgeGroup   int    `yaml:"agegroup"`
 }

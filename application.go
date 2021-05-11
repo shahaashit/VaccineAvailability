@@ -2,6 +2,7 @@ package main
 
 import (
 	"VaccineAvailability/availabilitychecker"
+	"VaccineAvailability/availabilitychecker/models"
 	"VaccineAvailability/config"
 	_ "VaccineAvailability/config"
 	"VaccineAvailability/log"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -28,7 +30,7 @@ func main() {
 func startCron() {
 	c := cron.New()
 
-	_, err := c.AddFunc("@every "+config.AppConfiguration.CronFreq, processForDistrict)
+	_, err := c.AddFunc("@every "+config.AppConfiguration.CronFreq, process)
 	if err != nil {
 		log.Fatal("error while setting up cron: ", err)
 	}
@@ -49,7 +51,21 @@ func startWebServer() {
 	})
 
 	http.HandleFunc("/getData", func(w http.ResponseWriter, r *http.Request) {
-		resp, err := availabilitychecker.GetDataForDistrictId(r.URL.Query().Get("districtId"))
+		districtId := r.URL.Query().Get("districtid")
+		pincode := r.URL.Query().Get("pincode")
+		var (
+			resp *models.HttpResponse
+			err  error
+		)
+		if districtId != "" {
+			resp, err = availabilitychecker.GetDataForDistrictId(districtId)
+		} else if pincode != "" {
+			resp, err = availabilitychecker.GetDataForPincode(pincode)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("incorrect input values"))
+			return
+		}
 		if err != nil {
 			log.Error("request: error while getting data from api: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -95,7 +111,7 @@ func startWebServer() {
 	http.ListenAndServe(":"+port, nil)
 }
 
-func processForDistrict() {
+func process() {
 	if killSwitch {
 		return
 	}
@@ -108,14 +124,23 @@ func processForDistrict() {
 	}
 
 	for _, channelConfig := range config.AppConfiguration.DistrictConfig.ChannelConfigList {
-		resp, err := availabilitychecker.GetDataForDistrictId(channelConfig.DistrictId)
-		if err != nil {
-			log.Error("error while getting data from api: ", err)
-			return
+		var centersList models.CentersList
+
+		if channelConfig.DistrictId != "" {
+			resp, err := availabilitychecker.GetDataForDistrictId(channelConfig.DistrictId)
+			if err != nil {
+				log.Error("error while getting data from api: ", err)
+				continue
+			}
+			centersList = resp.Centers
+		} else if channelConfig.Pincode != "" {
+			centersList = availabilitychecker.GetDataForMultiplePincodes(strings.Split(channelConfig.Pincode, ","))
+		} else {
+			continue
 		}
-		centersList := resp.Centers
+
 		centersList = centersList.GetFilteredCenters(true, channelConfig.AgeGroup)
-		if len(resp.Centers) > 0 {
+		if len(centersList) > 0 {
 			notifier.NotifyUsingTelegram(channelConfig, centersList)
 		}
 	}

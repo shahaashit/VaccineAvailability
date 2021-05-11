@@ -27,7 +27,7 @@ type MessageFlood struct {
 }
 
 func (mf MessageFloodData) getKeyForLocalSession(channelConf config.TelegramChannelsConf) string {
-	return channelConf.DistrictId + "~~" + strconv.Itoa(channelConf.AgeGroup)
+	return channelConf.DistrictId + "~~" + channelConf.Pincode + "~~" + strconv.Itoa(channelConf.AgeGroup)
 }
 
 func (mf MessageFloodData) isCurrentDataNew(channelConf config.TelegramChannelsConf, centersList models.CentersList) bool {

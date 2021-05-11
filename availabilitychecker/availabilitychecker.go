@@ -19,7 +19,7 @@ func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList
 		th.Do()
 		go func() {
 			defer th.Done()
-			resp, err := getDataForPincode(pinCode)
+			resp, err := GetDataForPincode(pinCode)
 			if err != nil {
 				log.Error("error while getting data from api: ", err)
 				return
@@ -31,7 +31,7 @@ func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList
 	return
 }
 
-func getDataForPincode(pincode string) (*models.HttpResponse, error) {
+func GetDataForPincode(pincode string) (*models.HttpResponse, error) {
 	finalResp := &models.HttpResponse{}
 
 	q := url.Values{}
