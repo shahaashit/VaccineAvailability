@@ -67,7 +67,7 @@ func startWebServer() {
 			return
 		}
 		if err != nil {
-			log.Error("request: error while getting data from api: ", err)
+			log.Error("request: error while getting data from service: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 		} else {
@@ -126,15 +126,20 @@ func process() {
 	for _, channelConfig := range config.AppConfiguration.DistrictConfig.ChannelConfigList {
 		var centersList models.CentersList
 
+		pincodeList := strings.Split(channelConfig.Pincode, ",")
 		if channelConfig.DistrictId != "" {
 			resp, err := availabilitychecker.GetDataForDistrictId(channelConfig.DistrictId)
 			if err != nil {
-				log.Error("error while getting data from api: ", err)
+				log.Error("error while getting data from service: ", err)
 				continue
 			}
 			centersList = resp.Centers
+
+			if len(pincodeList) > 0 {
+				centersList = centersList.FilterForPincodes(pincodeList)
+			}
 		} else if channelConfig.Pincode != "" {
-			centersList = availabilitychecker.GetDataForMultiplePincodes(strings.Split(channelConfig.Pincode, ","))
+			centersList = availabilitychecker.GetDataForMultiplePincodes(pincodeList)
 		} else {
 			continue
 		}

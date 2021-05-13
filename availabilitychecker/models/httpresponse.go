@@ -2,6 +2,7 @@ package models
 
 import (
 	"VaccineAvailability/utils"
+	"VaccineAvailability/utils/stringutil"
 	"sort"
 	"strconv"
 )
@@ -16,9 +17,9 @@ type Centers struct {
 	StateName    string        `json:"state_name"`
 	Districtname string        `json:"district_name"`
 	BlockName    string        `json:"block_name"`
-	Pincode      int64         `json:"pincode"`
-	Lat          int64         `json:"lat"`
-	Long         int64         `json:"long"`
+	Pincode      int           `json:"pincode"`
+	Lat          int           `json:"lat"`
+	Long         int           `json:"long"`
 	From         string        `json:"from"`
 	To           string        `json:"to"`
 	FeeType      string        `json:"fee_type"`
@@ -63,6 +64,16 @@ func (c CentersList) GetFilteredCenters(onlyAvailableCheck bool, currentAge int)
 	return result
 }
 
+func (c CentersList) FilterForPincodes(pincodes []string) CentersList {
+	var result CentersList
+	for _, center := range c {
+		if stringutil.CheckStringExistsInSlice(pincodes, strconv.Itoa(center.Pincode)) {
+			result = append(result, center)
+		}
+	}
+	return result
+}
+
 func (c CentersList) GetAllSortedCenterIds() []int {
 	var result []int
 	for _, center := range c {
@@ -76,7 +87,7 @@ func (c CentersList) GetAllSortedCenterIds() []int {
 func (c CentersList) GroupByPincode() map[string]CentersList {
 	finalData := make(map[string]CentersList)
 	for _, center := range c {
-		pincode := strconv.FormatInt(center.Pincode, 10)
+		pincode := strconv.Itoa(center.Pincode)
 		finalData[pincode] = append(finalData[pincode], center)
 	}
 	return finalData

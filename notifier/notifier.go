@@ -75,7 +75,7 @@ func parseDataForTelegramMessage(list models.CentersList) []string {
 		temp := strconv.Itoa(i+1) + ". <strong><u>" + center.Name + "</u></strong>\n" +
 			"District: " + center.Districtname + "\n" +
 			"Ward: " + center.BlockName + "\n" +
-			"Pincode: " + strconv.FormatInt(center.Pincode, 10) + "\n" +
+			"Pincode: " + strconv.Itoa(center.Pincode) + "\n" +
 			"Fee Type: " + center.FeeType + "\n"
 		for _, session := range center.Sessions {
 			ageValue := "18-44"

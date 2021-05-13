@@ -19,7 +19,8 @@ districtconfig:
     - districtid: 395 #mumbai
       agegroup: 45
       channelid: 5634563234
-    - pincode: 400072,400078,400005 #comma separated pincodes
+    - districtid: 395 #mumbai
+      pincode: 400072,400078,400005 #comma separated pincodes
       agegroup: 45
       channelid: 5634563234
 pincodeconfig:
