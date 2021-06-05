@@ -40,7 +40,7 @@ func GetDataForPincode(pincode string) (*models.HttpResponse, error) {
 	u := url.URL{
 		Scheme:   "https",
 		Host:     "cdn-api.co-vin.in",
-		Path:     "api/v2/appointment/sessions/calendarByPin",
+		Path:     "api/v2/appointment/sessions/public/calendarByPin",
 		RawQuery: q.Encode(),
 	}
 	urlToCall := u.String()
@@ -83,7 +83,7 @@ func GetDataForDistrictId(districtId string) (*models.HttpResponse, error) {
 	u := url.URL{
 		Scheme:   "https",
 		Host:     "cdn-api.co-vin.in",
-		Path:     "api/v2/appointment/sessions/calendarByDistrict",
+		Path:     "api/v2/appointment/sessions/public/calendarByDistrict",
 		RawQuery: q.Encode(),
 	}
 	urlToCall := u.String()
