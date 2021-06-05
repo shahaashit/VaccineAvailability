@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList) {
@@ -32,8 +33,6 @@ func GetDataForMultiplePincodes(pinCodes []string) (finalData models.CentersList
 }
 
 func GetDataForPincode(pincode string) (*models.HttpResponse, error) {
-	finalResp := &models.HttpResponse{}
-
 	q := url.Values{}
 	q.Set("pincode", pincode)
 	q.Set("date", utils.GetCurrentIstTime().Format("02-01-2006"))
@@ -47,36 +46,10 @@ func GetDataForPincode(pincode string) (*models.HttpResponse, error) {
 	log.Debug("current time used: ", utils.GetCurrentIstTime())
 	log.Debug(urlToCall)
 
-	var req *http.Request
-	req, err := http.NewRequest("GET", urlToCall, nil)
-	if err != nil {
-		log.Error("error while making request : ", err)
-		return nil, err
-	}
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("Accept-Language", "hi_IN")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36")
-
-	var defaultClient = &http.Client{}
-	response, err := defaultClient.Do(req)
-	if err != nil {
-		return nil, errors.New("error while calling url:" + err.Error())
-	}
-	apResponseInBytes, err := ioutil.ReadAll(response.Body)
-	defer func() {
-		err := response.Body.Close()
-		if err != nil {
-			log.Error("error while closing body : ", err)
-		}
-	}()
-
-	err = json.Unmarshal(apResponseInBytes, &finalResp)
-	return finalResp, err
+	return callUrlAndGetResponse(urlToCall)
 }
 
 func GetDataForDistrictId(districtId string) (*models.HttpResponse, error) {
-	finalResp := &models.HttpResponse{}
-
 	q := url.Values{}
 	q.Set("district_id", districtId)
 	q.Set("date", utils.GetCurrentIstTime().Format("02-01-2006"))
@@ -90,6 +63,12 @@ func GetDataForDistrictId(districtId string) (*models.HttpResponse, error) {
 	log.Debug("current time used: ", utils.GetCurrentIstTime())
 	log.Debug(urlToCall)
 
+	return callUrlAndGetResponse(urlToCall)
+}
+
+func callUrlAndGetResponse(urlToCall string) (*models.HttpResponse, error) {
+	finalResp := &models.HttpResponse{}
+
 	var req *http.Request
 	req, err := http.NewRequest("GET", urlToCall, nil)
 	if err != nil {
@@ -114,5 +93,12 @@ func GetDataForDistrictId(districtId string) (*models.HttpResponse, error) {
 	}()
 
 	err = json.Unmarshal(apResponseInBytes, &finalResp)
+	if err != nil {
+		return nil, errors.New("error while unmarshalling response: :" + err.Error())
+	}
+
+	if response.StatusCode != 200 {
+		return nil, errors.New("invalid status code: " + strconv.Itoa(response.StatusCode) + " and message: " + finalResp.Message)
+	}
 	return finalResp, err
 }

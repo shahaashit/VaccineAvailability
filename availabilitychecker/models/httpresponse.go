@@ -8,6 +8,7 @@ import (
 )
 
 type HttpResponse struct {
+	Message string      `json:"message"`
 	Centers CentersList `json:"centers"`
 }
 
