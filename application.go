@@ -116,7 +116,7 @@ func process() {
 		return
 	}
 	hourId := utils.GetCurrentIstTime().Hour()
-	if hourId >= 21 || hourId <= 8 { //throttle for non peak hours
+	if hourId >= 23 || hourId <= 7 { //throttle for non peak hours
 		if utils.GetCurrentIstTime().Minute()%5 != 0 {
 			log.Error("returning from processing in non-peak hours")
 			return
@@ -125,8 +125,11 @@ func process() {
 
 	for _, channelConfig := range config.AppConfiguration.DistrictConfig.ChannelConfigList {
 		var centersList models.CentersList
+		var pincodeList []string
 
-		pincodeList := strings.Split(channelConfig.Pincode, ",")
+		if channelConfig.Pincode != "" {
+			pincodeList = strings.Split(channelConfig.Pincode, ",")
+		}
 		if channelConfig.DistrictId != "" {
 			resp, err := availabilitychecker.GetDataForDistrictId(channelConfig.DistrictId)
 			if err != nil {
@@ -138,13 +141,14 @@ func process() {
 			if len(pincodeList) > 0 {
 				centersList = centersList.FilterForPincodes(pincodeList)
 			}
-		} else if channelConfig.Pincode != "" {
+		} else if len(pincodeList) > 0 {
 			centersList = availabilitychecker.GetDataForMultiplePincodes(pincodeList)
 		} else {
 			continue
 		}
 
 		centersList = centersList.GetFilteredCenters(true, channelConfig.AgeGroup)
+		log.Debug("final selected centers: ", centersList)
 		if len(centersList) > 0 {
 			notifier.NotifyUsingTelegram(channelConfig, centersList)
 		}
